@@ -3,6 +3,7 @@
  * @author Felix Rossmann
  */
 PMJS = {
+  lel : 1
 };
 
 /**
@@ -13,11 +14,21 @@ PMJS.Array = typeof Float32Array === 'function' ? Float32Array : Array;
 
 /**
  * @class Utils
- * @author Matthew Wagerfield
+ * @author Felix Rossmann
  */
 PMJS.Utils = {
-  isNumber: function(value) {
-    return !isNaN(parseFloat(value)) && isFinite(value);
+  randomRange: function(min, max) {
+    return (Math.random() * (max - min)) + min;
+  },
+  randomNormal: function() {
+    return ((Math.random() + Math.random() + Math.random() + Math.random()) - 2) / 2;
+  },
+  randomNormalRange: function (min, max) {
+    return (this.randomNormal() * (max - min)) + min;
+  },
+  floorDecPlaces: function(x, decPlaces) {
+    var j = Math.pow(10, decPlaces);
+    return Math.floor(x * j) / j;
   }
 };
 
@@ -27,7 +38,6 @@ PMJS.Utils = {
  * @see https://gist.github.com/paulirish/1579671
  */
 (function() {
-
   var lastTime = 0;
   var vendors = ['ms', 'moz', 'webkit', 'o'];
 
@@ -53,5 +63,4 @@ PMJS.Utils = {
       clearTimeout(id);
     };
   }
-
 }());

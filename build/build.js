@@ -4,11 +4,19 @@ var uglify = require('uglify-js');
 
 // Settings
 var FILE_ENCODING = 'utf-8',
-    PROJECT_NAME  = 'fss',
-    LICENSE       = '../LICENSE.md',
+    PROJECT_NAME  = 'pmjs',
+    LICENSE       = '../LICENSE',
     SOURCE_DIR    = '../source',
     OUTPUT_DIR    = '../deploy',
     SCRIPTS       = [
+        'core.js',
+        'config.js',
+        'vector2.js',
+        'vector3.js',
+        'geometry.js',
+        'dot.js',
+        'plane.js',
+        'renderer.js'
     ];
 
 // Returns a path string from a list of path segments

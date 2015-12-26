@@ -1,8 +1,8 @@
 /**
- *	@class Geometry
- *	@author Felix Rossmann
+ *  @class Geometry
+ *  @author Felix Rossmann
  */
-PMJS.Geometry = function() {
+ PMJS.Geometry = function() {
   this.vertices = [];
   this.connections = [];
   this.plsUpdate = false;

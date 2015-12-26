@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="500" height="400"></canvas>
+    <script src="deploy/pmjs.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+      var plane = new PMJS.Plane(500, 400, 50, '#2c2c2c');
+      var renderer = new PMJS.Renderer(document.getElementById('myCanvas'));
+      renderer.render(plane);
+    </script>
+  </body>
+</html>

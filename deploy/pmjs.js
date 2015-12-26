@@ -339,3 +339,621 @@
  *  Public License instead of this License.
  *  
  */
+/**
+ * Defines the polygon mesh JS object.
+ * @author Felix Rossmann
+ */
+PMJS = {
+  lel : 1
+};
+
+/**
+ * @class Array
+ * @author Matthew Wagerfield
+ */
+PMJS.Array = typeof Float32Array === 'function' ? Float32Array : Array;
+
+/**
+ * @class Utils
+ * @author Felix Rossmann
+ */
+PMJS.Utils = {
+  randomRange: function(min, max) {
+    return (Math.random() * (max - min)) + min;
+  },
+  randomNormal: function() {
+    return ((Math.random() + Math.random() + Math.random() + Math.random()) - 2) / 2;
+  },
+  randomNormalRange: function (min, max) {
+    return (this.randomNormal() * (max - min)) + min;
+  },
+  floorDecPlaces: function(x, decPlaces) {
+    var j = Math.pow(10, decPlaces);
+    return Math.floor(x * j) / j;
+  }
+};
+
+/**
+ * Request Animation Frame Polyfill.
+ * @author Paul Irish
+ * @see https://gist.github.com/paulirish/1579671
+ */
+(function() {
+  var lastTime = 0;
+  var vendors = ['ms', 'moz', 'webkit', 'o'];
+
+  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame  = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+  }
+
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function(callback, element) {
+      var currentTime = new Date().getTime();
+      var timeToCall = Math.max(0, 16 - (currentTime - lastTime));
+      var id = window.setTimeout(function() {
+        callback(currentTime + timeToCall);
+      }, timeToCall);
+      lastTime = currentTime + timeToCall;
+      return id;
+    };
+  }
+
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+    };
+  }
+}());
+
+/**
+ *  Default configuration for the polygon mesh.
+ *  @object Config
+ *  @author Felix Rossmann
+ */
+PMJS.Config = {
+  dotRadius: 1,
+  dotRadiusMax: 3,
+  dotColor: '#2c2c2c',
+  dotDirection: 0,
+  dotDirectionMin: 0,
+  dotDirectionMax: 360,
+  dotSpeedX: 5,
+  dotSpeedXMax: 10,
+  dotSpeedY: 5,
+  dotSpeedYMax: 10
+}
+
+/**
+ * @object Vector2
+ * @author Felix Rossmann
+ */
+PMJS.Vector2 = {
+  create: function(x, y) {
+    var vector = new PMJS.Array(2);
+    this.set(vector, x, y);
+    return vector;
+  },
+  clone: function(a) {
+    var vector = this.create();
+    this.copy(vector, a);
+    return vector;
+  },
+  set: function(target, x, y) {
+    target[0] = x || 0;
+    target[1] = y || 0;
+    return this;
+  },
+  setX: function(target, x) {
+    target[0] = x || 0;
+    return this;
+  },
+  setY: function(target, y) {
+    target[1] = y || 0;
+    return this;
+  },
+  copy: function(target, a) {
+    target[0] = a[0];
+    target[1] = a[1];
+    return this;
+  },
+  add: function(target, a) {
+    target[0] += a[0];
+    target[1] += a[1];
+    return this;
+  },
+  addVectors: function(target, a, b) {
+    target[0] = a[0] + b[0];
+    target[1] = a[1] + b[1];
+    return this;
+  },
+  addScalar: function(target, s) {
+    target[0] += s;
+    target[1] += s;
+    return this;
+  },
+  subtract: function(target, a) {
+    target[0] -= a[0];
+    target[1] -= a[1];
+    return this;
+  },
+  subtractVectors: function(target, a, b) {
+    target[0] = a[0] - b[0];
+    target[1] = a[1] - b[1];
+    return this;
+  },
+  subtractScalar: function(target, s) {
+    target[0] -= s;
+    target[1] -= s;
+    return this;
+  },
+  multiply: function(target, a) {
+    target[0] *= a[0];
+    target[1] *= a[1];
+    return this;
+  },
+  multiplyVectors: function(target, a, b) {
+    target[0] = a[0] * b[0];
+    target[1] = a[1] * b[1];
+    return this;
+  },
+  multiplyScalar: function(target, s) {
+    target[0] *= s;
+    target[1] *= s;
+    return this;
+  },
+  divide: function(target, a) {
+    target[0] /= a[0];
+    target[1] /= a[1];
+    return this;
+  },
+  divideVectors: function(target, a, b) {
+    target[0] = a[0] / b[0];
+    target[1] = a[1] / b[1];
+    return this;
+  },
+  divideScalar: function(target, s) {
+    if (s !== 0) {
+      target[0] /= s;
+      target[1] /= s;
+    } else {
+      target[0] = 0;
+      target[1] = 0;
+    }
+    return this;
+  },
+  min: function(target, value) {
+    if (target[0] < value) { target[0] = value; }
+    if (target[1] < value) { target[1] = value; }
+    return this;
+  },
+  max: function(target, value) {
+    if (target[0] > value) { target[0] = value; }
+    if (target[1] > value) { target[1] = value; }
+    return this;
+  },
+  clamp: function(target, min, max) {
+    this.min(target, min);
+    this.max(target, max);
+    return this;
+  },
+  limit: function(target, min, max) {
+    var length = this.length(target);
+    if (min !== null && length < min) {
+      this.setLength(target, min);
+    } else if (max !== null && length > max) {
+      this.setLength(target, max);
+    }
+    return this;
+  },
+  dot: function(a, b) {
+    return a[0]*b[0] + a[1]*b[1];
+  },
+  normalise: function(target) {
+    return this.divideScalar(target, this.length(target));
+  },
+  negate: function(target) {
+    return this.multiplyScalar(target, -1);
+  },
+  distanceSquared: function(a, b) {
+    var dx = a[0] - b[0];
+    var dy = a[1] - b[1];
+    return dx*dx + dy*dy;
+  },
+  distance: function(a, b) {
+    return Math.sqrt(this.distanceSquared(a, b));
+  },
+  lengthSquared: function(a) {
+    return a[0]*a[0] + a[1]*a[1];
+  },
+  length: function(a) {
+    return Math.sqrt(this.lengthSquared(a));
+  },
+  setLength: function(target, l) {
+    var length = this.length(target);
+    if (length !== 0 && l !== length) {
+      this.multiplyScalar(target, l / length);
+    }
+    return this;
+  }
+};
+
+/**
+ * @object Vector3
+ * @author Matthew Wagerfield
+ */
+PMJS.Vector3 = {
+  create: function(x, y, z) {
+    var vector = new PMJS.Array(3);
+    this.set(vector, x, y, z);
+    return vector;
+  },
+  clone: function(a) {
+    var vector = this.create();
+    this.copy(vector, a);
+    return vector;
+  },
+  set: function(target, x, y, z) {
+    target[0] = x || 0;
+    target[1] = y || 0;
+    target[2] = z || 0;
+    return this;
+  },
+  setX: function(target, x) {
+    target[0] = x || 0;
+    return this;
+  },
+  setY: function(target, y) {
+    target[1] = y || 0;
+    return this;
+  },
+  setZ: function(target, z) {
+    target[2] = z || 0;
+    return this;
+  },
+  copy: function(target, a) {
+    target[0] = a[0];
+    target[1] = a[1];
+    target[2] = a[2];
+    return this;
+  },
+  add: function(target, a) {
+    target[0] += a[0];
+    target[1] += a[1];
+    target[2] += a[2];
+    return this;
+  },
+  addVectors: function(target, a, b) {
+    target[0] = a[0] + b[0];
+    target[1] = a[1] + b[1];
+    target[2] = a[2] + b[2];
+    return this;
+  },
+  addScalar: function(target, s) {
+    target[0] += s;
+    target[1] += s;
+    target[2] += s;
+    return this;
+  },
+  subtract: function(target, a) {
+    target[0] -= a[0];
+    target[1] -= a[1];
+    target[2] -= a[2];
+    return this;
+  },
+  subtractVectors: function(target, a, b) {
+    target[0] = a[0] - b[0];
+    target[1] = a[1] - b[1];
+    target[2] = a[2] - b[2];
+    return this;
+  },
+  subtractScalar: function(target, s) {
+    target[0] -= s;
+    target[1] -= s;
+    target[2] -= s;
+    return this;
+  },
+  multiply: function(target, a) {
+    target[0] *= a[0];
+    target[1] *= a[1];
+    target[2] *= a[2];
+    return this;
+  },
+  multiplyVectors: function(target, a, b) {
+    target[0] = a[0] * b[0];
+    target[1] = a[1] * b[1];
+    target[2] = a[2] * b[2];
+    return this;
+  },
+  multiplyScalar: function(target, s) {
+    target[0] *= s;
+    target[1] *= s;
+    target[2] *= s;
+    return this;
+  },
+  divide: function(target, a) {
+    target[0] /= a[0];
+    target[1] /= a[1];
+    target[2] /= a[2];
+    return this;
+  },
+  divideVectors: function(target, a, b) {
+    target[0] = a[0] / b[0];
+    target[1] = a[1] / b[1];
+    target[2] = a[2] / b[2];
+    return this;
+  },
+  divideScalar: function(target, s) {
+    if (s !== 0) {
+      target[0] /= s;
+      target[1] /= s;
+      target[2] /= s;
+    } else {
+      target[0] = 0;
+      target[1] = 0;
+      target[2] = 0;
+    }
+    return this;
+  },
+  cross: function(target, a) {
+    var x = target[0];
+    var y = target[1];
+    var z = target[2];
+    target[0] = y*a[2] - z*a[1];
+    target[1] = z*a[0] - x*a[2];
+    target[2] = x*a[1] - y*a[0];
+    return this;
+  },
+  crossVectors: function(target, a, b) {
+    target[0] = a[1]*b[2] - a[2]*b[1];
+    target[1] = a[2]*b[0] - a[0]*b[2];
+    target[2] = a[0]*b[1] - a[1]*b[0];
+    return this;
+  },
+  min: function(target, value) {
+    if (target[0] < value) { target[0] = value; }
+    if (target[1] < value) { target[1] = value; }
+    if (target[2] < value) { target[2] = value; }
+    return this;
+  },
+  max: function(target, value) {
+    if (target[0] > value) { target[0] = value; }
+    if (target[1] > value) { target[1] = value; }
+    if (target[2] > value) { target[2] = value; }
+    return this;
+  },
+  clamp: function(target, min, max) {
+    this.min(target, min);
+    this.max(target, max);
+    return this;
+  },
+  limit: function(target, min, max) {
+    var length = this.length(target);
+    if (min !== null && length < min) {
+      this.setLength(target, min);
+    } else if (max !== null && length > max) {
+      this.setLength(target, max);
+    }
+    return this;
+  },
+  dot: function(a, b) {
+    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+  },
+  normalise: function(target) {
+    return this.divideScalar(target, this.length(target));
+  },
+  negate: function(target) {
+    return this.multiplyScalar(target, -1);
+  },
+  distanceSquared: function(a, b) {
+    var dx = a[0] - b[0];
+    var dy = a[1] - b[1];
+    var dz = a[2] - b[2];
+    return dx*dx + dy*dy + dz*dz;
+  },
+  distance: function(a, b) {
+    return Math.sqrt(this.distanceSquared(a, b));
+  },
+  lengthSquared: function(a) {
+    return a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
+  },
+  length: function(a) {
+    return Math.sqrt(this.lengthSquared(a));
+  },
+  setLength: function(target, l) {
+    var length = this.length(target);
+    if (length !== 0 && l !== length) {
+      this.multiplyScalar(target, l / length);
+    }
+    return this;
+  }
+};
+
+/**
+ *  @class Geometry
+ *  @author Felix Rossmann
+ */
+ PMJS.Geometry = function() {
+  this.vertices = [];
+  this.connections = [];
+  this.plsUpdate = false;
+};
+
+PMJS.Geometry.prototype = {
+  update: function() {
+    if (this.plsUpdate) {
+      this.plsUpdate = false;
+    }
+    return this;
+  }
+};
+
+/**
+ *  @class Dot
+ *  @author Felix Rossmann
+ */
+PMJS.Dot = function(x, y, radius, color, speedX, speedY, direction) {
+  this.position = PMJS.Vector2.create(x, y);
+  this.direction= PMJS.Vector3.create(
+                    speedX || PMJS.Config.dotSpeedX,
+                    speedY || PMJS.Config.dotSpeedY,
+                    direction || PMJS.Config.dotDirection
+                  );
+  this.radius = radius || PMJS.Config.dotRadius;
+  this.color    = color || PMJS.Config.dotColor;
+};
+
+PMJS.Dot.prototype = {
+  setPosition: function(x, y) {
+    PMJS.Vector3.set(this.position, x, y);
+    return this;
+  },
+  moveStep: function() {
+    //TODO
+    return this;
+  },
+  updateDirectionStep: function() {
+    //TODO
+    return this;
+  },
+  setRadius: function(radius) {
+    this.radius = radius;
+    return this;
+  },
+  setColor: function(color) {
+    this.color = color;
+    return this;
+  },
+  updateDirection: function(deltaX, deltaY, deltaDirection) {
+    PMJS.Vector3.add(this.direction, deltaX, deltaY, deltaDirection);
+    return this;
+  },
+  setDirection: function(speedX, speedY, direction) {
+    PMJS.Vector3.set(this.direction, speedX, speedY, direction);
+    return this;
+  }
+};
+
+/**
+ *	@class Plane
+ *	@author Felix Rossmann
+ */
+PMJS.Plane = function(width, height, dotCount, dotColor) {
+  this.width     = width;
+  this.height    = height;
+  this.dotCount  = dotCount;
+  this.dotColor  = dotColor || PMJS.Config.dotColor;
+  this.dots      = [];
+  this.initDots();
+};
+
+PMJS.Plane.prototype = {
+  initDots: function() {
+    var i;
+    var dots = [];
+
+    for (i = 0; i < this.dotCount; i++) {
+      this.addDot();
+    }
+    
+    return this;
+  },
+  setDotColor: function (color) {
+    this.dots.forEach(function () {
+      this.setColor(color);
+    });
+    return this;
+  },
+  addDot: function () {
+    var x, y, radius, speedX, speedY, direction;
+
+    x = PMJS.Utils.randomRange(
+          0,
+          this.width
+        );
+    y = PMJS.Utils.randomRange(
+          0,
+          this.height
+        );
+    radius =  PMJS.Utils.randomRange(
+                  0,
+                  PMJS.Config.dotRadiusMax
+                );
+    speedX =  PMJS.Utils.floorDecPlaces(
+                PMJS.Utils.randomNormalRange(
+                  0,
+                  PMJS.Config.dotSpeedXMax
+                )
+              );
+    speedY = PMJS.Utils.floorDecPlaces(
+                PMJS.Utils.randomNormalRange(
+                  0,
+                  PMJS.Config.dotSpeedYMax
+                )
+              );
+    direction = PMJS.Utils.floorDecPlaces(
+                  PMJS.Utils.randomRange(
+                    PMJS.Config.dotDirectionMin,
+                    PMJS.Config.dotDirectionMax
+                  ),
+                  2
+                );
+
+    var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY, direction);
+
+    this.dots.push(dot);
+    return this;
+  },
+  removeDot: function () {
+    this.dots.pop();
+    return this;
+  }
+};
+
+/**
+ * Defines the polygon mesh JS object.
+ * @author Felix Rossmann
+ */
+PMJS.Renderer = function(target) {
+  this.element = target;
+  this.element.style.display = 'block';
+  this.context = this.element.getContext('2d');
+  this.setSize(this.element.width, this.element.height);
+};
+
+PMJS.Renderer.prototype = {
+  setSize: function(width, height) {
+    if (this.width === width && this.height === height) return;
+    this.width = width;
+    this.height = height;
+    this.halfWidth = width / 2;
+    this.halfHeight = height / 2;
+    //this.context.setTransform(1, 0, 0, -1, this.halfWidth, this.halfHeight);
+    return this;
+  },
+  clear: function() {
+    this.context.clearRect(-this.halfWidth, -this.halfHeight, this.width, this.height);
+    return this;
+  },
+  render: function(plane) {
+    var d, dot;
+
+    // Clear Context
+    this.clear();
+
+    // Configure Context
+    //this.context.lineJoin = 'round';
+    //this.context.lineWidth = 1;
+
+    // Draw all dots
+    for (d = plane.dotCount - 1; d >= 0; d--) {
+      dot = plane.dots[d];
+
+      this.context.beginPath();
+      this.context.arc(dot.position[0], dot.position[1], Math.ceil(dot.radius), 0, 2 * Math.PI, false);
+      this.context.fillStyle = dot.color;
+      this.context.fill();
+    }
+    return this;
+  }
+};
