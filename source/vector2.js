@@ -36,6 +36,14 @@ PMJS.Vector2 = {
     target[1] += a[1];
     return this;
   },
+  addX: function(target, x) {
+    target[0] += x;
+    return this;
+  },
+  addY: function(target, y) {
+    target[1] += y;
+    return this;
+  },
   addVectors: function(target, a, b) {
     target[0] = a[0] + b[0];
     target[1] = a[1] + b[1];

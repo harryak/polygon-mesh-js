@@ -21,7 +21,7 @@ PMJS.Utils = {
     return (Math.random() * (max - min)) + min;
   },
   randomNormal: function() {
-    return ((Math.random() + Math.random() + Math.random() + Math.random()) - 2) / 2;
+    return ((Math.random() + Math.random() + Math.random() + Math.random()) - 1);
   },
   randomNormalRange: function (min, max) {
     return (this.randomNormal() * (max - min)) + min;

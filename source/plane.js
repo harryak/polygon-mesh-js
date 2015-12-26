@@ -14,7 +14,6 @@ PMJS.Plane = function(width, height, dotCount, dotColor) {
 PMJS.Plane.prototype = {
   initDots: function() {
     var i;
-    var dots = [];
 
     for (i = 0; i < this.dotCount; i++) {
       this.addDot();
@@ -44,26 +43,21 @@ PMJS.Plane.prototype = {
                   PMJS.Config.dotRadiusMax
                 );
     speedX =  PMJS.Utils.floorDecPlaces(
-                PMJS.Utils.randomNormalRange(
-                  0,
+                PMJS.Utils.randomRange(
+                  PMJS.Config.dotSpeedXMin,
                   PMJS.Config.dotSpeedXMax
-                )
+                ),
+                4
               );
     speedY = PMJS.Utils.floorDecPlaces(
-                PMJS.Utils.randomNormalRange(
-                  0,
+                PMJS.Utils.randomRange(
+                  PMJS.Config.dotSpeedYMin,
                   PMJS.Config.dotSpeedYMax
-                )
+                ),
+                4
               );
-    direction = PMJS.Utils.floorDecPlaces(
-                  PMJS.Utils.randomRange(
-                    PMJS.Config.dotDirectionMin,
-                    PMJS.Config.dotDirectionMax
-                  ),
-                  2
-                );
 
-    var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY, direction);
+    var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY);
 
     this.dots.push(dot);
     return this;

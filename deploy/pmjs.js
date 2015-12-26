@@ -362,7 +362,7 @@ PMJS.Utils = {
     return (Math.random() * (max - min)) + min;
   },
   randomNormal: function() {
-    return ((Math.random() + Math.random() + Math.random() + Math.random()) - 2) / 2;
+    return ((Math.random() + Math.random() + Math.random() + Math.random()) - 1);
   },
   randomNormalRange: function (min, max) {
     return (this.randomNormal() * (max - min)) + min;
@@ -412,16 +412,17 @@ PMJS.Utils = {
  *  @author Felix Rossmann
  */
 PMJS.Config = {
-  dotRadius: 1,
+  dotRadius: 2,
   dotRadiusMax: 3,
-  dotColor: '#2c2c2c',
+  dotColor: '#dedede',
   dotDirection: 0,
-  dotDirectionMin: 0,
-  dotDirectionMax: 360,
-  dotSpeedX: 5,
-  dotSpeedXMax: 10,
-  dotSpeedY: 5,
-  dotSpeedYMax: 10
+  dotSpeedX: 0,
+  dotSpeedXMin: -0.6,
+  dotSpeedXMax: 0.6,
+  dotSpeedY: 0,
+  dotSpeedYMin: -0.6,
+  dotSpeedYMax: 0.6,
+  dotSpeedMinDelta: 0.02,
 }
 
 /**
@@ -460,6 +461,14 @@ PMJS.Vector2 = {
   add: function(target, a) {
     target[0] += a[0];
     target[1] += a[1];
+    return this;
+  },
+  addX: function(target, x) {
+    target[0] += x;
+    return this;
+  },
+  addY: function(target, y) {
+    target[1] += y;
     return this;
   },
   addVectors: function(target, a, b) {
@@ -579,197 +588,6 @@ PMJS.Vector2 = {
 };
 
 /**
- * @object Vector3
- * @author Matthew Wagerfield
- */
-PMJS.Vector3 = {
-  create: function(x, y, z) {
-    var vector = new PMJS.Array(3);
-    this.set(vector, x, y, z);
-    return vector;
-  },
-  clone: function(a) {
-    var vector = this.create();
-    this.copy(vector, a);
-    return vector;
-  },
-  set: function(target, x, y, z) {
-    target[0] = x || 0;
-    target[1] = y || 0;
-    target[2] = z || 0;
-    return this;
-  },
-  setX: function(target, x) {
-    target[0] = x || 0;
-    return this;
-  },
-  setY: function(target, y) {
-    target[1] = y || 0;
-    return this;
-  },
-  setZ: function(target, z) {
-    target[2] = z || 0;
-    return this;
-  },
-  copy: function(target, a) {
-    target[0] = a[0];
-    target[1] = a[1];
-    target[2] = a[2];
-    return this;
-  },
-  add: function(target, a) {
-    target[0] += a[0];
-    target[1] += a[1];
-    target[2] += a[2];
-    return this;
-  },
-  addVectors: function(target, a, b) {
-    target[0] = a[0] + b[0];
-    target[1] = a[1] + b[1];
-    target[2] = a[2] + b[2];
-    return this;
-  },
-  addScalar: function(target, s) {
-    target[0] += s;
-    target[1] += s;
-    target[2] += s;
-    return this;
-  },
-  subtract: function(target, a) {
-    target[0] -= a[0];
-    target[1] -= a[1];
-    target[2] -= a[2];
-    return this;
-  },
-  subtractVectors: function(target, a, b) {
-    target[0] = a[0] - b[0];
-    target[1] = a[1] - b[1];
-    target[2] = a[2] - b[2];
-    return this;
-  },
-  subtractScalar: function(target, s) {
-    target[0] -= s;
-    target[1] -= s;
-    target[2] -= s;
-    return this;
-  },
-  multiply: function(target, a) {
-    target[0] *= a[0];
-    target[1] *= a[1];
-    target[2] *= a[2];
-    return this;
-  },
-  multiplyVectors: function(target, a, b) {
-    target[0] = a[0] * b[0];
-    target[1] = a[1] * b[1];
-    target[2] = a[2] * b[2];
-    return this;
-  },
-  multiplyScalar: function(target, s) {
-    target[0] *= s;
-    target[1] *= s;
-    target[2] *= s;
-    return this;
-  },
-  divide: function(target, a) {
-    target[0] /= a[0];
-    target[1] /= a[1];
-    target[2] /= a[2];
-    return this;
-  },
-  divideVectors: function(target, a, b) {
-    target[0] = a[0] / b[0];
-    target[1] = a[1] / b[1];
-    target[2] = a[2] / b[2];
-    return this;
-  },
-  divideScalar: function(target, s) {
-    if (s !== 0) {
-      target[0] /= s;
-      target[1] /= s;
-      target[2] /= s;
-    } else {
-      target[0] = 0;
-      target[1] = 0;
-      target[2] = 0;
-    }
-    return this;
-  },
-  cross: function(target, a) {
-    var x = target[0];
-    var y = target[1];
-    var z = target[2];
-    target[0] = y*a[2] - z*a[1];
-    target[1] = z*a[0] - x*a[2];
-    target[2] = x*a[1] - y*a[0];
-    return this;
-  },
-  crossVectors: function(target, a, b) {
-    target[0] = a[1]*b[2] - a[2]*b[1];
-    target[1] = a[2]*b[0] - a[0]*b[2];
-    target[2] = a[0]*b[1] - a[1]*b[0];
-    return this;
-  },
-  min: function(target, value) {
-    if (target[0] < value) { target[0] = value; }
-    if (target[1] < value) { target[1] = value; }
-    if (target[2] < value) { target[2] = value; }
-    return this;
-  },
-  max: function(target, value) {
-    if (target[0] > value) { target[0] = value; }
-    if (target[1] > value) { target[1] = value; }
-    if (target[2] > value) { target[2] = value; }
-    return this;
-  },
-  clamp: function(target, min, max) {
-    this.min(target, min);
-    this.max(target, max);
-    return this;
-  },
-  limit: function(target, min, max) {
-    var length = this.length(target);
-    if (min !== null && length < min) {
-      this.setLength(target, min);
-    } else if (max !== null && length > max) {
-      this.setLength(target, max);
-    }
-    return this;
-  },
-  dot: function(a, b) {
-    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
-  },
-  normalise: function(target) {
-    return this.divideScalar(target, this.length(target));
-  },
-  negate: function(target) {
-    return this.multiplyScalar(target, -1);
-  },
-  distanceSquared: function(a, b) {
-    var dx = a[0] - b[0];
-    var dy = a[1] - b[1];
-    var dz = a[2] - b[2];
-    return dx*dx + dy*dy + dz*dz;
-  },
-  distance: function(a, b) {
-    return Math.sqrt(this.distanceSquared(a, b));
-  },
-  lengthSquared: function(a) {
-    return a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
-  },
-  length: function(a) {
-    return Math.sqrt(this.lengthSquared(a));
-  },
-  setLength: function(target, l) {
-    var length = this.length(target);
-    if (length !== 0 && l !== length) {
-      this.multiplyScalar(target, l / length);
-    }
-    return this;
-  }
-};
-
-/**
  *  @class Geometry
  *  @author Felix Rossmann
  */
@@ -792,28 +610,62 @@ PMJS.Geometry.prototype = {
  *  @class Dot
  *  @author Felix Rossmann
  */
-PMJS.Dot = function(x, y, radius, color, speedX, speedY, direction) {
+PMJS.Dot = function(x, y, radius, color, speedX, speedY) {
   this.position = PMJS.Vector2.create(x, y);
-  this.direction= PMJS.Vector3.create(
-                    speedX || PMJS.Config.dotSpeedX,
-                    speedY || PMJS.Config.dotSpeedY,
-                    direction || PMJS.Config.dotDirection
-                  );
   this.radius = radius || PMJS.Config.dotRadius;
   this.color    = color || PMJS.Config.dotColor;
+  this.speed    = PMJS.Vector2.create(
+                    speedX || PMJS.Config.dotSpeedX,
+                    speedY || PMJS.Config.dotSpeedY
+                  );
 };
 
 PMJS.Dot.prototype = {
   setPosition: function(x, y) {
-    PMJS.Vector3.set(this.position, x, y);
+    PMJS.Vector2.set(this.position, x, y);
+    return this;
+  },
+  setPositionX: function(x) {
+    PMJS.Vector2.setX(this.position, x);
+    return this;
+  },
+  setPositionY: function(y) {
+    PMJS.Vector2.setY(this.position, y);
     return this;
   },
   moveStep: function() {
-    //TODO
+    PMJS.Vector2.add(this.position, this.speed);
     return this;
   },
-  updateDirectionStep: function() {
-    //TODO
+  updateSpeed: function() {
+    var deltaX =  PMJS.Utils.floorDecPlaces(
+                    PMJS.Utils.randomRange(
+                      PMJS.Config.dotSpeedXMin,
+                      PMJS.Config.dotSpeedXMax
+                    ),
+                    4
+                  ) * 0.1;
+    var speedX = this.speed[0];
+    if (deltaX > PMJS.Config.dotSpeedMinDelta || deltaX < 0 - PMJS.Config.dotSpeedMinDelta) {
+      speedX += deltaX;
+      if (speedX < PMJS.Config.dotSpeedXMin) speedX = PMJS.Config.dotSpeedXMin;
+      if (speedX > PMJS.Config.dotSpeedXMax) speedX = PMJS.Config.dotSpeedXMax;
+    }
+    var deltaY =  PMJS.Utils.floorDecPlaces(
+                    PMJS.Utils.randomRange(
+                      PMJS.Config.dotSpeedYMin,
+                      PMJS.Config.dotSpeedYMax
+                    ),
+                    4
+                  ) * 0.1;
+    var speedY = this.speed[1];
+    if (deltaY > PMJS.Config.dotSpeedMinDelta || deltaY < 0 - PMJS.Config.dotSpeedMinDelta) {
+      speedY += deltaY;
+      if (speedY < PMJS.Config.dotSpeedYMin) speedY = PMJS.Config.dotSpeedYMin;
+      if (speedY > PMJS.Config.dotSpeedYMax) speedY = PMJS.Config.dotSpeedYMax;
+    }
+    PMJS.Vector2.setX(this.speed, speedX);
+    PMJS.Vector2.setY(this.speed, speedY);
     return this;
   },
   setRadius: function(radius) {
@@ -824,12 +676,8 @@ PMJS.Dot.prototype = {
     this.color = color;
     return this;
   },
-  updateDirection: function(deltaX, deltaY, deltaDirection) {
-    PMJS.Vector3.add(this.direction, deltaX, deltaY, deltaDirection);
-    return this;
-  },
-  setDirection: function(speedX, speedY, direction) {
-    PMJS.Vector3.set(this.direction, speedX, speedY, direction);
+  setDirection: function(speedX, speedY) {
+    PMJS.Vector2.set(this.direction, speedX, speedY);
     return this;
   }
 };
@@ -850,7 +698,6 @@ PMJS.Plane = function(width, height, dotCount, dotColor) {
 PMJS.Plane.prototype = {
   initDots: function() {
     var i;
-    var dots = [];
 
     for (i = 0; i < this.dotCount; i++) {
       this.addDot();
@@ -880,26 +727,21 @@ PMJS.Plane.prototype = {
                   PMJS.Config.dotRadiusMax
                 );
     speedX =  PMJS.Utils.floorDecPlaces(
-                PMJS.Utils.randomNormalRange(
-                  0,
+                PMJS.Utils.randomRange(
+                  PMJS.Config.dotSpeedXMin,
                   PMJS.Config.dotSpeedXMax
-                )
+                ),
+                4
               );
     speedY = PMJS.Utils.floorDecPlaces(
-                PMJS.Utils.randomNormalRange(
-                  0,
+                PMJS.Utils.randomRange(
+                  PMJS.Config.dotSpeedYMin,
                   PMJS.Config.dotSpeedYMax
-                )
+                ),
+                4
               );
-    direction = PMJS.Utils.floorDecPlaces(
-                  PMJS.Utils.randomRange(
-                    PMJS.Config.dotDirectionMin,
-                    PMJS.Config.dotDirectionMax
-                  ),
-                  2
-                );
 
-    var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY, direction);
+    var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY);
 
     this.dots.push(dot);
     return this;
@@ -914,11 +756,13 @@ PMJS.Plane.prototype = {
  * Defines the polygon mesh JS object.
  * @author Felix Rossmann
  */
-PMJS.Renderer = function(target) {
+PMJS.Renderer = function(target, plane) {
   this.element = target;
   this.element.style.display = 'block';
+  this.element.style.background = 'midnightblue';
   this.context = this.element.getContext('2d');
   this.setSize(this.element.width, this.element.height);
+  if (undefined !== plane) this.plane = plane;
 };
 
 PMJS.Renderer.prototype = {
@@ -928,14 +772,19 @@ PMJS.Renderer.prototype = {
     this.height = height;
     this.halfWidth = width / 2;
     this.halfHeight = height / 2;
-    //this.context.setTransform(1, 0, 0, -1, this.halfWidth, this.halfHeight);
     return this;
   },
   clear: function() {
-    this.context.clearRect(-this.halfWidth, -this.halfHeight, this.width, this.height);
+    this.context.clearRect(0, 0, this.width, this.height);
     return this;
   },
+  setPlane: function (plane) {
+    this.plane = plane;
+  },
   render: function(plane) {
+    if (!(plane || this.plane)) return;
+    if (!plane) var plane = this.plane;
+
     var d, dot;
 
     // Clear Context
@@ -950,10 +799,24 @@ PMJS.Renderer.prototype = {
       dot = plane.dots[d];
 
       this.context.beginPath();
-      this.context.arc(dot.position[0], dot.position[1], Math.ceil(dot.radius), 0, 2 * Math.PI, false);
+      this.context.arc(dot.position[0], dot.position[1], dot.radius, 0, 2 * Math.PI, false);
       this.context.fillStyle = dot.color;
       this.context.fill();
+
+      dot.moveStep();
+      dot.updateSpeed();
+      if (dot.position[0] < 0) dot.setPositionX(this.width);
+      else if (dot.position[0] > this.width) dot.setPositionX(0);
+      if (dot.position[1] < 0) dot.setPositionY(this.height);
+      else if (dot.position[1] > this.height) dot.setPositionY(0);
     }
     return this;
+  },
+  animate: function(timestep) {
+    if (!timestep) timestep = 50;
+    var that = this;
+    window.setInterval(function(){
+      that.render();
+    }, timestep);
   }
 };

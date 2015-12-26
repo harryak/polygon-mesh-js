@@ -9,12 +9,12 @@
     </style>
   </head>
   <body>
-    <canvas id="myCanvas" width="500" height="400"></canvas>
+    <canvas id="myCanvas" width="900" height="600"></canvas>
     <script src="deploy/pmjs.js" type="text/javascript" charset="utf-8"></script>
     <script>
-      var plane = new PMJS.Plane(500, 400, 50, '#2c2c2c');
-      var renderer = new PMJS.Renderer(document.getElementById('myCanvas'));
-      renderer.render(plane);
+      var plane = new PMJS.Plane(900, 600, 50, 'ghostwhite');
+      var renderer = new PMJS.Renderer(document.getElementById('myCanvas'), plane);
+      renderer.animate();
     </script>
   </body>
 </html>
