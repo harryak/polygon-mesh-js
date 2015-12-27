@@ -5,15 +5,25 @@
 PMJS.Plane = function(width, height, dotCount, dotColor) {
   this.width     = width;
   this.height    = height;
-  this.dotCount  = dotCount;
+  this.setDotCount(dotCount);
   this.dotColor  = dotColor || PMJS.Config.dotColor;
   this.dots      = [];
   this.lines     = [];
   this.initDots();
-  this.updateLines();
+  //this.quadTree  = new PMJS.QuadTree(this.dots, 0, this.width, 0, this.height, this.dotSpace * 5);
+  //this.updateLines();
 };
 
 PMJS.Plane.prototype = {
+  setDotCount: function(dotCount) {
+    if (undefined !== dotCount) {
+      this.dotSpace = Math.ceil((this.width * this.height) / dotCount);
+      this.dotCount = dotCount;
+    } else {
+      this.dotSpace = PMJS.Config.dotSpace;
+      this.dotCount = Math.floor((this.width * this.height) / (this.dotSpace * this.dotSpace));
+    }
+  },
   initDots: function() {
     var i;
 
@@ -30,7 +40,7 @@ PMJS.Plane.prototype = {
     return this;
   },
   addDot: function () {
-    var x, y, radius, speedX, speedY, direction;
+    var x, y, radius, speedX, speedY, dotColorR, dotColorG, dotColorB, dotColorA;
 
     x = PMJS.Utils.randomRange(
           0,
@@ -58,6 +68,11 @@ PMJS.Plane.prototype = {
                 ),
                 4
               );
+    dotColorR = PMJS.Utils.randomIntRange(PMJS.Config.dotColorMinR, PMJS.Config.dotColorMaxR);
+    dotColorG = PMJS.Utils.randomIntRange(PMJS.Config.dotColorMinG, PMJS.Config.dotColorMaxG);
+    dotColorB = PMJS.Utils.randomIntRange(PMJS.Config.dotColorMinB, PMJS.Config.dotColorMaxB);
+    dotColorA = PMJS.Utils.randomRange(PMJS.Config.dotColorMinA, PMJS.Config.dotColorMaxA);
+    this.dotColor = 'rgba('+dotColorR+','+dotColorG+','+dotColorB+','+dotColorA+')';
 
     var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY);
 

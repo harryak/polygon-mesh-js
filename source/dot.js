@@ -4,8 +4,9 @@
  */
 PMJS.Dot = function(x, y, radius, color, speedX, speedY) {
   this.position = PMJS.Vector2.create(x, y);
-  this.radius = radius || PMJS.Config.dotRadius;
+  this.radius   = radius || PMJS.Config.dotRadius;
   this.color    = color || PMJS.Config.dotColor;
+  this.blur      = PMJS.Config.dotBlur;
   this.speed    = PMJS.Vector2.create(
                     speedX || PMJS.Config.dotSpeedX,
                     speedY || PMJS.Config.dotSpeedY
@@ -25,6 +26,12 @@ PMJS.Dot.prototype = {
   setPositionY: function(y) {
     PMJS.Vector2.setY(this.position, y);
     return this;
+  },
+  getPositionX: function() {
+    return PMJS.Vector2.getX(this.position);
+  },
+  getPositionY: function() {
+    return PMJS.Vector2.getY(this.position);
   },
   moveStep: function() {
     PMJS.Vector2.add(this.position, this.speed);
@@ -67,10 +74,6 @@ PMJS.Dot.prototype = {
   },
   setColor: function(color) {
     this.color = color;
-    return this;
-  },
-  setDirection: function(speedX, speedY) {
-    PMJS.Vector2.set(this.direction, speedX, speedY);
     return this;
   }
 };
