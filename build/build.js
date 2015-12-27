@@ -14,6 +14,7 @@ var FILE_ENCODING = 'utf-8',
         'vector2.js',
         'dot.js',
         'line.js',
+        'quadtree.js',
         'plane.js',
         'renderer.js'
     ];

@@ -20,7 +20,11 @@ PMJS.Utils = {
   randomRange: function(min, max) {
     return (Math.random() * (max - min)) + min;
   },
+  randomIntRange: function(min, max) {
+    return Math.floor((Math.random() * (max - min + 1)) + min);
+  },
   randomNormal: function() {
+    //TODO: This does not work.
     return ((Math.random() + Math.random() + Math.random() + Math.random()) - 1);
   },
   randomNormalRange: function (min, max) {
@@ -29,6 +33,22 @@ PMJS.Utils = {
   floorDecPlaces: function(x, decPlaces) {
     var j = Math.pow(10, decPlaces);
     return Math.floor(x * j) / j;
+  },
+  hexCodeToRGBA: function(hexcode) {
+    hexcode = hexcode.replace('#','');
+    r = parseInt(hexcode.substring(0,2), 16);
+    g = parseInt(hexcode.substring(2,4), 16);
+    b = parseInt(hexcode.substring(4,6), 16);
+
+    result = 'rgba('+r+','+g+','+b+','+opacity/100+')';
+    return result;
+  },
+  RGBAtoHexCode: function(rgba) {
+    rgba = rgba.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+    return (rgba && rgba.length === 4) ? "#" +
+      ("0" + parseInt(rgba[1],10).toString(16)).slice(-2) +
+      ("0" + parseInt(rgba[2],10).toString(16)).slice(-2) +
+      ("0" + parseInt(rgba[3],10).toString(16)).slice(-2) : '';
   }
 };
 

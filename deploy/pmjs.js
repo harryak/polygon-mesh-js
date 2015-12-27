@@ -361,7 +361,11 @@ PMJS.Utils = {
   randomRange: function(min, max) {
     return (Math.random() * (max - min)) + min;
   },
+  randomIntRange: function(min, max) {
+    return Math.floor((Math.random() * (max - min + 1)) + min);
+  },
   randomNormal: function() {
+    //TODO: This does not work.
     return ((Math.random() + Math.random() + Math.random() + Math.random()) - 1);
   },
   randomNormalRange: function (min, max) {
@@ -370,6 +374,22 @@ PMJS.Utils = {
   floorDecPlaces: function(x, decPlaces) {
     var j = Math.pow(10, decPlaces);
     return Math.floor(x * j) / j;
+  },
+  hexCodeToRGBA: function(hexcode) {
+    hexcode = hexcode.replace('#','');
+    r = parseInt(hexcode.substring(0,2), 16);
+    g = parseInt(hexcode.substring(2,4), 16);
+    b = parseInt(hexcode.substring(4,6), 16);
+
+    result = 'rgba('+r+','+g+','+b+','+opacity/100+')';
+    return result;
+  },
+  RGBAtoHexCode: function(rgba) {
+    rgba = rgba.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+    return (rgba && rgba.length === 4) ? "#" +
+      ("0" + parseInt(rgba[1],10).toString(16)).slice(-2) +
+      ("0" + parseInt(rgba[2],10).toString(16)).slice(-2) +
+      ("0" + parseInt(rgba[3],10).toString(16)).slice(-2) : '';
   }
 };
 
@@ -413,9 +433,17 @@ PMJS.Utils = {
  */
 PMJS.Config = {
   dotRadius: 2,
-  dotRadiusMax: 3,
+  dotRadiusMax: 20,
   dotColor: '#fefefe',
-  dotDirection: 0,
+  dotBlur: 10,
+  dotColorMinR: 255,
+  dotColorMaxR: 255,
+  dotColorMinG: 128,
+  dotColorMaxG: 255,
+  dotColorMinB: 50,
+  dotColorMaxB: 50,
+  dotColorMinA: 0.2,
+  dotColorMaxA: 0.8,
   dotSpeedX: 0,
   dotSpeedXMin: -0.6,
   dotSpeedXMax: 0.6,
@@ -423,6 +451,7 @@ PMJS.Config = {
   dotSpeedYMin: -0.6,
   dotSpeedYMax: 0.6,
   dotSpeedMinDelta: 0.02,
+  dotSpace: 50, // How large is the edge of a square containing one dot if they were evenly distributed? This is a measure for the density of dots.
   lineColor: '#dedede',
   lineSize: 1,
   lineSizeMin: 0.5,
@@ -620,8 +649,9 @@ PMJS.Vector2 = {
  */
 PMJS.Dot = function(x, y, radius, color, speedX, speedY) {
   this.position = PMJS.Vector2.create(x, y);
-  this.radius = radius || PMJS.Config.dotRadius;
+  this.radius   = radius || PMJS.Config.dotRadius;
   this.color    = color || PMJS.Config.dotColor;
+  this.blur      = PMJS.Config.dotBlur;
   this.speed    = PMJS.Vector2.create(
                     speedX || PMJS.Config.dotSpeedX,
                     speedY || PMJS.Config.dotSpeedY
@@ -641,6 +671,12 @@ PMJS.Dot.prototype = {
   setPositionY: function(y) {
     PMJS.Vector2.setY(this.position, y);
     return this;
+  },
+  getPositionX: function() {
+    return PMJS.Vector2.getX(this.position);
+  },
+  getPositionY: function() {
+    return PMJS.Vector2.getY(this.position);
   },
   moveStep: function() {
     PMJS.Vector2.add(this.position, this.speed);
@@ -684,10 +720,6 @@ PMJS.Dot.prototype = {
   setColor: function(color) {
     this.color = color;
     return this;
-  },
-  setDirection: function(speedX, speedY) {
-    PMJS.Vector2.set(this.direction, speedX, speedY);
-    return this;
   }
 };
 
@@ -718,21 +750,148 @@ PMJS.Line.prototype = {
 };
 
 /**
+ *  @class QuadTree.boundaries
+ *  @author Felix Rossmann
+ */
+PMJS.boundaries = function(xs, xe, ys, ye, sizex) {
+  this.xs = xs || 0;
+  this.xe = xe || 0;
+  this.ys = ys || 0;
+  this.ye = ye || 0;
+  this.sizex = sizex || 0;
+};
+
+/**
+ *  @class QuadTree
+ *  @author Felix Rossmann
+ */
+PMJS.QuadTree = function(dots, xs, xe, ys, ye, sizex, leafNode) {
+  if (sizex < 0) return;
+  this.setBoundaries(xs, xe, ys, ye, sizex);
+  if (undefined !== leafNode && leafNode) {
+    this.leafNode = true;
+    this.children = dots;
+  } else {
+    this.leafNode = false;
+    this.children = [];
+    this.initTree(dots);
+  }
+};
+
+PMJS.QuadTree.prototype = {
+  setBoundaries: function(xs, xe, ys, ye, sizex) {
+    this.boundaries = new PMJS.boundaries(xs, xe, ys, ye, sizex);
+    return this;
+  },
+  initTree: function(dots) {
+    var dots1 = [];
+    var dots2 = [];
+    var dots3 = [];
+    var dots4 = [];
+
+    var leafNodes = false;
+
+    var cutX = (this.boundaries.xe - this.boundaries.xs) / 2;
+    if (cutX <= this.boundaries.sizex) {
+      leafNodes = true;
+    }
+    cutX += this.boundaries.xs;
+    var cutY = (this.boundaries.ye - this.boundaries.ys) / 2 + this.boundaries.ys;
+
+    if (dots.length > 0) {
+      var i;
+      for (i = dots.length - 1; i >= 0; i--) {
+        if (dots[i].getPositionX() < cutX) {
+          if (dots[i].getPositionY() < cutY) {
+            dots1.push(dots[i]);
+          } else {
+            dots3.push(dots[i]);
+          }
+        } else {
+          if (dots[i].getPositionY() < cutY) {
+            dots2.push(dots[i]);
+          } else {
+            dots4.push(dots[i]);
+          }
+        }
+      }
+    }
+
+    // TODO: Make recursion less recursive
+    if (dots1.length > 0) {
+      this.children.push(new PMJS.QuadTree(
+                            dots1,
+                            this.boundaries.xs,
+                            this.boundaries.xs + cutX,
+                            this.boundaries.ys,
+                            this.boundaries.ys + cutY,
+                            this.boundaries.sizex,
+                            leafNodes
+                          )
+                        );
+    } else {
+      this.children.push(false);
+    }
+    this.children.push(new PMJS.QuadTree(
+                          dots2,
+                          this.boundaries.xs + cutX,
+                          this.boundaries.xe,
+                          this.boundaries.ys + cutY,
+                          this.boundaries.ye,
+                          this.boundaries.sizex,
+                          leafNodes
+                        )
+                      );
+    this.children.push(new PMJS.QuadTree(
+                          dots3,
+                          this.boundaries.xs,
+                          this.boundaries.xs + cutX,
+                          this.boundaries.ys + cutY,
+                          this.boundaries.ye,
+                          this.boundaries.sizex,
+                          leafNodes
+                        )
+                      );
+    this.children.push(new PMJS.QuadTree(
+                          dots4,
+                          this.boundaries.xs + cutX,
+                          this.boundaries.xe,
+                          this.boundaries.ys + cutY,
+                          this.boundaries.ye,
+                          this.boundaries.sizex,
+                          leafNodes
+                        )
+                      );
+    return this;
+  }
+};
+
+/**
  *	@class Plane
  *	@author Felix Rossmann
  */
 PMJS.Plane = function(width, height, dotCount, dotColor) {
   this.width     = width;
   this.height    = height;
-  this.dotCount  = dotCount;
+  this.setDotCount(dotCount);
   this.dotColor  = dotColor || PMJS.Config.dotColor;
   this.dots      = [];
   this.lines     = [];
   this.initDots();
-  this.updateLines();
+  //this.quadTree  = new PMJS.QuadTree(this.dots, 0, this.width, 0, this.height, this.dotSpace * 5);
+  //this.updateLines();
 };
 
 PMJS.Plane.prototype = {
+  setDotCount: function(dotCount) {
+    if (undefined !== dotCount) {
+      this.dotSpace = Math.ceil((this.width * this.height) / dotCount);
+      this.dotCount = dotCount;
+    } else {
+      this.dotSpace = PMJS.Config.dotSpace;
+      this.dotCount = Math.floor((this.width * this.height) / (this.dotSpace * this.dotSpace));
+    }
+  },
   initDots: function() {
     var i;
 
@@ -749,7 +908,7 @@ PMJS.Plane.prototype = {
     return this;
   },
   addDot: function () {
-    var x, y, radius, speedX, speedY, direction;
+    var x, y, radius, speedX, speedY, dotColorR, dotColorG, dotColorB, dotColorA;
 
     x = PMJS.Utils.randomRange(
           0,
@@ -777,6 +936,11 @@ PMJS.Plane.prototype = {
                 ),
                 4
               );
+    dotColorR = PMJS.Utils.randomIntRange(PMJS.Config.dotColorMinR, PMJS.Config.dotColorMaxR);
+    dotColorG = PMJS.Utils.randomIntRange(PMJS.Config.dotColorMinG, PMJS.Config.dotColorMaxG);
+    dotColorB = PMJS.Utils.randomIntRange(PMJS.Config.dotColorMinB, PMJS.Config.dotColorMaxB);
+    dotColorA = PMJS.Utils.randomRange(PMJS.Config.dotColorMinA, PMJS.Config.dotColorMaxA);
+    this.dotColor = 'rgba('+dotColorR+','+dotColorG+','+dotColorB+','+dotColorA+')';
 
     var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY);
 
@@ -797,14 +961,20 @@ PMJS.Plane.prototype = {
  */
 PMJS.Renderer = function(target, dotCount) {
   this.element = target;
+  this.dotCount = dotCount;
   this.element.style.display = 'block';
   this.context = this.element.getContext('2d');
+  this.context.canvas.width  = window.innerWidth;
+  this.context.canvas.height = window.innerHeight;
   this.setSize(this.element.width, this.element.height);
 
-  this.plane = new PMJS.Plane(this.width, this.height, dotCount);
+  this.redefinePlane(this.dotCount);
 };
 
 PMJS.Renderer.prototype = {
+  redefinePlane: function (dotCount) {
+    this.setPlane(new PMJS.Plane(this.width, this.height, dotCount));
+  },
   setSize: function(width, height) {
     if (this.width === width && this.height === height) return;
     this.width = width;
@@ -820,35 +990,40 @@ PMJS.Renderer.prototype = {
   setPlane: function (plane) {
     this.plane = plane;
   },
-  render: function(plane) {
-    if (!(plane || this.plane)) return;
-    if (!plane) var plane = this.plane;
-
+  render: function() {
+    if (this.width != window.innerWidth || this.height != window.innerHeight) {
+      this.context.canvas.width  = window.innerWidth;
+      this.context.canvas.height = window.innerHeight;
+      this.setSize(this.element.width, this.element.height);
+      this.setPlane(new PMJS.Plane(this.width, this.height, this.dotCount));
+    }
     var d, dot, l, line;
 
     // Clear Context
     this.clear();
 
     // Draw all dots
-    for (d = plane.dotCount - 1; d >= 0; d--) {
-      dot = plane.dots[d];
+    for (d = this.plane.dotCount - 1; d >= 0; d--) {
+      dot = this.plane.dots[d];
 
       this.context.beginPath();
-      this.context.arc(PMJS.Vector2.getX(dot.position), PMJS.Vector2.getY(dot.position), dot.radius, 0, 2 * Math.PI, false);
+      this.context.arc(dot.getPositionX(), dot.getPositionY(), dot.radius, 0, 2 * Math.PI, false);
       this.context.fillStyle = dot.color;
+      this.context.shadowColor = dot.color;
+      this.context.shadowBlur=dot.blur;
       this.context.fill();
 
       dot.moveStep();
       dot.updateSpeed();
 
-      if (PMJS.Vector2.getX(dot.position) < 0) dot.setPositionX(this.width);
-      else if (PMJS.Vector2.getX(dot.position) > this.width) dot.setPositionX(0);
-      if (PMJS.Vector2.getY(dot.position) < 0) dot.setPositionY(this.height);
-      else if (PMJS.Vector2.getY(dot.position) > this.height) dot.setPositionY(0);
+      if (dot.getPositionX() < 0) dot.setPositionX(this.width);
+      else if (dot.getPositionX() > this.width) dot.setPositionX(0);
+      if (dot.getPositionY() < 0) dot.setPositionY(this.height);
+      else if (dot.getPositionY() > this.height) dot.setPositionY(0);
     }
 
-    /*for (l = plane.lines.length - 1; l >= 0; l--) {
-      line = plane.lines[l];
+    /*for (l = this.plane.lines.length - 1; l >= 0; l--) {
+      line = this.plane.lines[l];
 
       this.context.beginPath();
       this.context.moveTo(line.start.position.x, line.start.position.y);
@@ -860,7 +1035,7 @@ PMJS.Renderer.prototype = {
       this.context.stroke();
     }
 
-    this.plane.updateLines();*/
+    this.this.plane.updateLines();*/
 
     return this;
   },
