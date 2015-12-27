@@ -6,7 +6,7 @@
 PMJS.Config = {
   dotRadius: 2,
   dotRadiusMax: 3,
-  dotColor: '#dedede',
+  dotColor: '#fefefe',
   dotDirection: 0,
   dotSpeedX: 0,
   dotSpeedXMin: -0.6,
@@ -15,4 +15,8 @@ PMJS.Config = {
   dotSpeedYMin: -0.6,
   dotSpeedYMax: 0.6,
   dotSpeedMinDelta: 0.02,
+  lineColor: '#dedede',
+  lineSize: 1,
+  lineSizeMin: 0.5,
+  lineSizeMax: 1.5
 }

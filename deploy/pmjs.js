@@ -414,7 +414,7 @@ PMJS.Utils = {
 PMJS.Config = {
   dotRadius: 2,
   dotRadiusMax: 3,
-  dotColor: '#dedede',
+  dotColor: '#fefefe',
   dotDirection: 0,
   dotSpeedX: 0,
   dotSpeedXMin: -0.6,
@@ -423,6 +423,10 @@ PMJS.Config = {
   dotSpeedYMin: -0.6,
   dotSpeedYMax: 0.6,
   dotSpeedMinDelta: 0.02,
+  lineColor: '#dedede',
+  lineSize: 1,
+  lineSizeMin: 0.5,
+  lineSizeMax: 1.5
 }
 
 /**
@@ -431,7 +435,7 @@ PMJS.Config = {
  */
 PMJS.Vector2 = {
   create: function(x, y) {
-    var vector = new PMJS.Array(2);
+    var vector = new function() { this.x; this.y };
     this.set(vector, x, y);
     return vector;
   },
@@ -441,104 +445,113 @@ PMJS.Vector2 = {
     return vector;
   },
   set: function(target, x, y) {
-    target[0] = x || 0;
-    target[1] = y || 0;
+    target.x = x || 0;
+    target.y = y || 0;
     return this;
   },
   setX: function(target, x) {
-    target[0] = x || 0;
+    target.x = x || 0;
     return this;
   },
   setY: function(target, y) {
-    target[1] = y || 0;
+    target.y = y || 0;
     return this;
   },
+  get: function(target) {
+    return [target.x, target.y];
+  },
+  getX: function(target) {
+    return target.x;
+  },
+  getY: function(target) {
+    return target.y;
+  },
   copy: function(target, a) {
-    target[0] = a[0];
-    target[1] = a[1];
+    target.x = a.x;
+    target.y = a.y;
     return this;
   },
   add: function(target, a) {
-    target[0] += a[0];
-    target[1] += a[1];
+    target.x += a.x;
+    target.y += a.y;
     return this;
   },
   addX: function(target, x) {
-    target[0] += x;
+    target.x += x;
     return this;
   },
   addY: function(target, y) {
-    target[1] += y;
+    target.y += y;
     return this;
   },
   addVectors: function(target, a, b) {
-    target[0] = a[0] + b[0];
-    target[1] = a[1] + b[1];
+    target.x = a.x + b.x;
+    target.y = a.y + b.y;
     return this;
   },
   addScalar: function(target, s) {
-    target[0] += s;
-    target[1] += s;
+    target.x += s;
+    target.y += s;
     return this;
   },
   subtract: function(target, a) {
-    target[0] -= a[0];
-    target[1] -= a[1];
+    target.x -= a.x;
+    target.y -= a.y;
     return this;
   },
   subtractVectors: function(target, a, b) {
-    target[0] = a[0] - b[0];
-    target[1] = a[1] - b[1];
+    target.x = a.x - b.x;
+    target.y = a.y - b.y;
     return this;
   },
   subtractScalar: function(target, s) {
-    target[0] -= s;
-    target[1] -= s;
+    target.x -= s;
+    target.y -= s;
     return this;
   },
   multiply: function(target, a) {
-    target[0] *= a[0];
-    target[1] *= a[1];
+    target.x *= a.x;
+    target.y *= a.y;
     return this;
   },
   multiplyVectors: function(target, a, b) {
-    target[0] = a[0] * b[0];
-    target[1] = a[1] * b[1];
+    target.x = a.x * b.x;
+    target.y = a.y * b.y;
     return this;
   },
   multiplyScalar: function(target, s) {
-    target[0] *= s;
-    target[1] *= s;
+    target.x *= s;
+    target.y *= s;
     return this;
   },
   divide: function(target, a) {
-    target[0] /= a[0];
-    target[1] /= a[1];
+    target.x /= a.x;
+    target.y /= a.y;
     return this;
   },
   divideVectors: function(target, a, b) {
-    target[0] = a[0] / b[0];
-    target[1] = a[1] / b[1];
+    target.x = a.x / b.x;
+    target.y = a.y / b.y;
     return this;
   },
   divideScalar: function(target, s) {
     if (s !== 0) {
-      target[0] /= s;
-      target[1] /= s;
+      target.x /= s;
+      target.y /= s;
     } else {
-      target[0] = 0;
-      target[1] = 0;
+      target.x = 0;
+      target.y = 0;
     }
     return this;
   },
   min: function(target, value) {
-    if (target[0] < value) { target[0] = value; }
-    if (target[1] < value) { target[1] = value; }
+    if (target.x < value) { target.x = value; }
+    if (target.y < value) { target.y = value; }
     return this;
   },
   max: function(target, value) {
-    if (target[0] > value) { target[0] = value; }
-    if (target[1] > value) { target[1] = value; }
+    if (target.x > value) { target.x = value; }
+    if (target.y > value) { target.y = value; }
     return this;
   },
   clamp: function(target, min, max) {
@@ -556,7 +569,7 @@ PMJS.Vector2 = {
     return this;
   },
   dot: function(a, b) {
-    return a[0]*b[0] + a[1]*b[1];
+    return a.x*b.x + a.y*b.y;
   },
   normalise: function(target) {
     return this.divideScalar(target, this.length(target));
@@ -565,15 +578,15 @@ PMJS.Vector2 = {
     return this.multiplyScalar(target, -1);
   },
   distanceSquared: function(a, b) {
-    var dx = a[0] - b[0];
-    var dy = a[1] - b[1];
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
     return dx*dx + dy*dy;
   },
   distance: function(a, b) {
     return Math.sqrt(this.distanceSquared(a, b));
   },
   lengthSquared: function(a) {
-    return a[0]*a[0] + a[1]*a[1];
+    return a.x*a.x + a.y*a.y;
   },
   length: function(a) {
     return Math.sqrt(this.lengthSquared(a));
@@ -584,25 +597,20 @@ PMJS.Vector2 = {
       this.multiplyScalar(target, l / length);
     }
     return this;
-  }
-};
-
-/**
- *  @class Geometry
- *  @author Felix Rossmann
- */
- PMJS.Geometry = function() {
-  this.vertices = [];
-  this.connections = [];
-  this.plsUpdate = false;
-};
-
-PMJS.Geometry.prototype = {
-  update: function() {
-    if (this.plsUpdate) {
-      this.plsUpdate = false;
-    }
-    return this;
+  },
+  compareX: function(a, b) {
+    if (a.x < b.x)
+      return -1;
+    if (a.x > b.x)
+      return 1;
+    return 0;
+  },
+  comparePositionY: function(a, b) {
+    if (a.y < b.y)
+      return -1;
+    if (a.y > b.y)
+      return 1;
+    return 0;
   }
 };
 
@@ -618,6 +626,7 @@ PMJS.Dot = function(x, y, radius, color, speedX, speedY) {
                     speedX || PMJS.Config.dotSpeedX,
                     speedY || PMJS.Config.dotSpeedY
                   );
+  this.connected = [];
 };
 
 PMJS.Dot.prototype = {
@@ -645,7 +654,7 @@ PMJS.Dot.prototype = {
                     ),
                     4
                   ) * 0.1;
-    var speedX = this.speed[0];
+    var speedX = PMJS.Vector2.getX(this.speed);
     if (deltaX > PMJS.Config.dotSpeedMinDelta || deltaX < 0 - PMJS.Config.dotSpeedMinDelta) {
       speedX += deltaX;
       if (speedX < PMJS.Config.dotSpeedXMin) speedX = PMJS.Config.dotSpeedXMin;
@@ -658,7 +667,7 @@ PMJS.Dot.prototype = {
                     ),
                     4
                   ) * 0.1;
-    var speedY = this.speed[1];
+    var speedY = PMJS.Vector2.getY(this.speed);
     if (deltaY > PMJS.Config.dotSpeedMinDelta || deltaY < 0 - PMJS.Config.dotSpeedMinDelta) {
       speedY += deltaY;
       if (speedY < PMJS.Config.dotSpeedYMin) speedY = PMJS.Config.dotSpeedYMin;
@@ -683,6 +692,32 @@ PMJS.Dot.prototype = {
 };
 
 /**
+ *  @class Line
+ *  @author Felix Rossmann
+ */
+PMJS.Line = function(start, end, color, size) {
+  this.start = start;
+  this.end   = end;
+  this.color = color || PMJS.Config.lineColor;
+  this.size  = size  || PMJS.Config.lineSize;
+};
+
+PMJS.Line.prototype = {
+  setStart: function(start) {
+    this.start = start;
+  },
+  setEnd: function(end) {
+    this.end = end;
+  },
+  setColor: function(color) {
+    this.color = color;
+  },
+  setSize: function(size) {
+    this.size = size;
+  }
+};
+
+/**
  *	@class Plane
  *	@author Felix Rossmann
  */
@@ -692,7 +727,9 @@ PMJS.Plane = function(width, height, dotCount, dotColor) {
   this.dotCount  = dotCount;
   this.dotColor  = dotColor || PMJS.Config.dotColor;
   this.dots      = [];
+  this.lines     = [];
   this.initDots();
+  this.updateLines();
 };
 
 PMJS.Plane.prototype = {
@@ -746,8 +783,10 @@ PMJS.Plane.prototype = {
     this.dots.push(dot);
     return this;
   },
-  removeDot: function () {
-    this.dots.pop();
+  updateLines: function() {
+    var i, j;
+    this.lines = [];
+
     return this;
   }
 };
@@ -756,13 +795,13 @@ PMJS.Plane.prototype = {
  * Defines the polygon mesh JS object.
  * @author Felix Rossmann
  */
-PMJS.Renderer = function(target, plane) {
+PMJS.Renderer = function(target, dotCount) {
   this.element = target;
   this.element.style.display = 'block';
-  this.element.style.background = 'midnightblue';
   this.context = this.element.getContext('2d');
   this.setSize(this.element.width, this.element.height);
-  if (undefined !== plane) this.plane = plane;
+
+  this.plane = new PMJS.Plane(this.width, this.height, dotCount);
 };
 
 PMJS.Renderer.prototype = {
@@ -785,31 +824,44 @@ PMJS.Renderer.prototype = {
     if (!(plane || this.plane)) return;
     if (!plane) var plane = this.plane;
 
-    var d, dot;
+    var d, dot, l, line;
 
     // Clear Context
     this.clear();
-
-    // Configure Context
-    //this.context.lineJoin = 'round';
-    //this.context.lineWidth = 1;
 
     // Draw all dots
     for (d = plane.dotCount - 1; d >= 0; d--) {
       dot = plane.dots[d];
 
       this.context.beginPath();
-      this.context.arc(dot.position[0], dot.position[1], dot.radius, 0, 2 * Math.PI, false);
+      this.context.arc(PMJS.Vector2.getX(dot.position), PMJS.Vector2.getY(dot.position), dot.radius, 0, 2 * Math.PI, false);
       this.context.fillStyle = dot.color;
       this.context.fill();
 
       dot.moveStep();
       dot.updateSpeed();
-      if (dot.position[0] < 0) dot.setPositionX(this.width);
-      else if (dot.position[0] > this.width) dot.setPositionX(0);
-      if (dot.position[1] < 0) dot.setPositionY(this.height);
-      else if (dot.position[1] > this.height) dot.setPositionY(0);
+
+      if (PMJS.Vector2.getX(dot.position) < 0) dot.setPositionX(this.width);
+      else if (PMJS.Vector2.getX(dot.position) > this.width) dot.setPositionX(0);
+      if (PMJS.Vector2.getY(dot.position) < 0) dot.setPositionY(this.height);
+      else if (PMJS.Vector2.getY(dot.position) > this.height) dot.setPositionY(0);
     }
+
+    /*for (l = plane.lines.length - 1; l >= 0; l--) {
+      line = plane.lines[l];
+
+      this.context.beginPath();
+      this.context.moveTo(line.start.position.x, line.start.position.y);
+      this.context.lineTo(line.end.position.x, line.end.position.y);
+      this.context.lineWidth = line.size;
+
+      // set line color
+      this.context.strokeStyle = line.color;
+      this.context.stroke();
+    }
+
+    this.plane.updateLines();*/
+
     return this;
   },
   animate: function(timestep) {

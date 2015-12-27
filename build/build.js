@@ -12,8 +12,8 @@ var FILE_ENCODING = 'utf-8',
         'core.js',
         'config.js',
         'vector2.js',
-        'geometry.js',
         'dot.js',
+        'line.js',
         'plane.js',
         'renderer.js'
     ];

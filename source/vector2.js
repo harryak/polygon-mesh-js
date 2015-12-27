@@ -4,7 +4,7 @@
  */
 PMJS.Vector2 = {
   create: function(x, y) {
-    var vector = new PMJS.Array(2);
+    var vector = new function() { this.x; this.y };
     this.set(vector, x, y);
     return vector;
   },
@@ -14,104 +14,113 @@ PMJS.Vector2 = {
     return vector;
   },
   set: function(target, x, y) {
-    target[0] = x || 0;
-    target[1] = y || 0;
+    target.x = x || 0;
+    target.y = y || 0;
     return this;
   },
   setX: function(target, x) {
-    target[0] = x || 0;
+    target.x = x || 0;
     return this;
   },
   setY: function(target, y) {
-    target[1] = y || 0;
+    target.y = y || 0;
     return this;
   },
+  get: function(target) {
+    return [target.x, target.y];
+  },
+  getX: function(target) {
+    return target.x;
+  },
+  getY: function(target) {
+    return target.y;
+  },
   copy: function(target, a) {
-    target[0] = a[0];
-    target[1] = a[1];
+    target.x = a.x;
+    target.y = a.y;
     return this;
   },
   add: function(target, a) {
-    target[0] += a[0];
-    target[1] += a[1];
+    target.x += a.x;
+    target.y += a.y;
     return this;
   },
   addX: function(target, x) {
-    target[0] += x;
+    target.x += x;
     return this;
   },
   addY: function(target, y) {
-    target[1] += y;
+    target.y += y;
     return this;
   },
   addVectors: function(target, a, b) {
-    target[0] = a[0] + b[0];
-    target[1] = a[1] + b[1];
+    target.x = a.x + b.x;
+    target.y = a.y + b.y;
     return this;
   },
   addScalar: function(target, s) {
-    target[0] += s;
-    target[1] += s;
+    target.x += s;
+    target.y += s;
     return this;
   },
   subtract: function(target, a) {
-    target[0] -= a[0];
-    target[1] -= a[1];
+    target.x -= a.x;
+    target.y -= a.y;
     return this;
   },
   subtractVectors: function(target, a, b) {
-    target[0] = a[0] - b[0];
-    target[1] = a[1] - b[1];
+    target.x = a.x - b.x;
+    target.y = a.y - b.y;
     return this;
   },
   subtractScalar: function(target, s) {
-    target[0] -= s;
-    target[1] -= s;
+    target.x -= s;
+    target.y -= s;
     return this;
   },
   multiply: function(target, a) {
-    target[0] *= a[0];
-    target[1] *= a[1];
+    target.x *= a.x;
+    target.y *= a.y;
     return this;
   },
   multiplyVectors: function(target, a, b) {
-    target[0] = a[0] * b[0];
-    target[1] = a[1] * b[1];
+    target.x = a.x * b.x;
+    target.y = a.y * b.y;
     return this;
   },
   multiplyScalar: function(target, s) {
-    target[0] *= s;
-    target[1] *= s;
+    target.x *= s;
+    target.y *= s;
     return this;
   },
   divide: function(target, a) {
-    target[0] /= a[0];
-    target[1] /= a[1];
+    target.x /= a.x;
+    target.y /= a.y;
     return this;
   },
   divideVectors: function(target, a, b) {
-    target[0] = a[0] / b[0];
-    target[1] = a[1] / b[1];
+    target.x = a.x / b.x;
+    target.y = a.y / b.y;
     return this;
   },
   divideScalar: function(target, s) {
     if (s !== 0) {
-      target[0] /= s;
-      target[1] /= s;
+      target.x /= s;
+      target.y /= s;
     } else {
-      target[0] = 0;
-      target[1] = 0;
+      target.x = 0;
+      target.y = 0;
     }
     return this;
   },
   min: function(target, value) {
-    if (target[0] < value) { target[0] = value; }
-    if (target[1] < value) { target[1] = value; }
+    if (target.x < value) { target.x = value; }
+    if (target.y < value) { target.y = value; }
     return this;
   },
   max: function(target, value) {
-    if (target[0] > value) { target[0] = value; }
-    if (target[1] > value) { target[1] = value; }
+    if (target.x > value) { target.x = value; }
+    if (target.y > value) { target.y = value; }
     return this;
   },
   clamp: function(target, min, max) {
@@ -129,7 +138,7 @@ PMJS.Vector2 = {
     return this;
   },
   dot: function(a, b) {
-    return a[0]*b[0] + a[1]*b[1];
+    return a.x*b.x + a.y*b.y;
   },
   normalise: function(target) {
     return this.divideScalar(target, this.length(target));
@@ -138,15 +147,15 @@ PMJS.Vector2 = {
     return this.multiplyScalar(target, -1);
   },
   distanceSquared: function(a, b) {
-    var dx = a[0] - b[0];
-    var dy = a[1] - b[1];
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
     return dx*dx + dy*dy;
   },
   distance: function(a, b) {
     return Math.sqrt(this.distanceSquared(a, b));
   },
   lengthSquared: function(a) {
-    return a[0]*a[0] + a[1]*a[1];
+    return a.x*a.x + a.y*a.y;
   },
   length: function(a) {
     return Math.sqrt(this.lengthSquared(a));
@@ -157,5 +166,19 @@ PMJS.Vector2 = {
       this.multiplyScalar(target, l / length);
     }
     return this;
+  },
+  compareX: function(a, b) {
+    if (a.x < b.x)
+      return -1;
+    if (a.x > b.x)
+      return 1;
+    return 0;
+  },
+  comparePositionY: function(a, b) {
+    if (a.y < b.y)
+      return -1;
+    if (a.y > b.y)
+      return 1;
+    return 0;
   }
 };

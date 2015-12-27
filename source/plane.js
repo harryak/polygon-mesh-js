@@ -8,7 +8,9 @@ PMJS.Plane = function(width, height, dotCount, dotColor) {
   this.dotCount  = dotCount;
   this.dotColor  = dotColor || PMJS.Config.dotColor;
   this.dots      = [];
+  this.lines     = [];
   this.initDots();
+  this.updateLines();
 };
 
 PMJS.Plane.prototype = {
@@ -62,8 +64,10 @@ PMJS.Plane.prototype = {
     this.dots.push(dot);
     return this;
   },
-  removeDot: function () {
-    this.dots.pop();
+  updateLines: function() {
+    var i, j;
+    this.lines = [];
+
     return this;
   }
 };

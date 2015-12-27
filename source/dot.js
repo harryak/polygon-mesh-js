@@ -10,6 +10,7 @@ PMJS.Dot = function(x, y, radius, color, speedX, speedY) {
                     speedX || PMJS.Config.dotSpeedX,
                     speedY || PMJS.Config.dotSpeedY
                   );
+  this.connected = [];
 };
 
 PMJS.Dot.prototype = {
@@ -37,7 +38,7 @@ PMJS.Dot.prototype = {
                     ),
                     4
                   ) * 0.1;
-    var speedX = this.speed[0];
+    var speedX = PMJS.Vector2.getX(this.speed);
     if (deltaX > PMJS.Config.dotSpeedMinDelta || deltaX < 0 - PMJS.Config.dotSpeedMinDelta) {
       speedX += deltaX;
       if (speedX < PMJS.Config.dotSpeedXMin) speedX = PMJS.Config.dotSpeedXMin;
@@ -50,7 +51,7 @@ PMJS.Dot.prototype = {
                     ),
                     4
                   ) * 0.1;
-    var speedY = this.speed[1];
+    var speedY = PMJS.Vector2.getY(this.speed);
     if (deltaY > PMJS.Config.dotSpeedMinDelta || deltaY < 0 - PMJS.Config.dotSpeedMinDelta) {
       speedY += deltaY;
       if (speedY < PMJS.Config.dotSpeedYMin) speedY = PMJS.Config.dotSpeedYMin;
