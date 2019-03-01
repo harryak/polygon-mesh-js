@@ -31,18 +31,20 @@ PMJS.Utils = {
     return (this.randomNormal() * (max - min)) + min;
   },
   floorDecPlaces: function(x, decPlaces) {
-    var j = Math.pow(10, decPlaces);
+    let j = Math.pow(10, decPlaces);
     return Math.floor(x * j) / j;
   },
   hexCodeToRGBA: function(hexcode) {
     hexcode = hexcode.replace('#','');
-    r = parseInt(hexcode.substring(0,2), 16);
-    g = parseInt(hexcode.substring(2,4), 16);
-    b = parseInt(hexcode.substring(4,6), 16);
+    let r = parseInt(hexcode.substring(0,2), 16);
+    let g = parseInt(hexcode.substring(2,4), 16);
+    let b = parseInt(hexcode.substring(4,6), 16);
 
-    result = 'rgba('+r+','+g+','+b+','+opacity/100+')';
-    return result;
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity / 100 + ')';
   },
+  /**
+   * @return {string}
+   */
   RGBAtoHexCode: function(rgba) {
     rgba = rgba.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
     return (rgba && rgba.length === 4) ? "#" +
@@ -58,19 +60,20 @@ PMJS.Utils = {
  * @see https://gist.github.com/paulirish/1579671
  */
 (function() {
-  var lastTime = 0;
-  var vendors = ['ms', 'moz', 'webkit', 'o'];
+  let lastTime = 0;
+  let vendors = ['ms', 'moz', 'webkit', 'o'];
 
-  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+  for(let x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
     window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
     window.cancelAnimationFrame  = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
   }
 
   if (!window.requestAnimationFrame) {
+    // noinspection JSValidateTypes
     window.requestAnimationFrame = function(callback, element) {
-      var currentTime = new Date().getTime();
-      var timeToCall = Math.max(0, 16 - (currentTime - lastTime));
-      var id = window.setTimeout(function() {
+      let currentTime = new Date().getTime();
+      let timeToCall = Math.max(0, 16 - (currentTime - lastTime));
+      let id = window.setTimeout(function() {
         callback(currentTime + timeToCall);
       }, timeToCall);
       lastTime = currentTime + timeToCall;

@@ -4,12 +4,12 @@
  */
 PMJS.Vector2 = {
   create: function(x, y) {
-    var vector = new function() { this.x; this.y };
+    let vector = new function() { this.x = 0; this.y = 0; };
     this.set(vector, x, y);
     return vector;
   },
   clone: function(a) {
-    var vector = this.create();
+    let vector = this.create();
     this.copy(vector, a);
     return vector;
   },
@@ -129,7 +129,7 @@ PMJS.Vector2 = {
     return this;
   },
   limit: function(target, min, max) {
-    var length = this.length(target);
+    let length = this.length(target);
     if (min !== null && length < min) {
       this.setLength(target, min);
     } else if (max !== null && length > max) {
@@ -147,8 +147,8 @@ PMJS.Vector2 = {
     return this.multiplyScalar(target, -1);
   },
   distanceSquared: function(a, b) {
-    var dx = a.x - b.x;
-    var dy = a.y - b.y;
+    let dx = a.x - b.x;
+    let dy = a.y - b.y;
     return dx*dx + dy*dy;
   },
   distance: function(a, b) {
@@ -161,7 +161,7 @@ PMJS.Vector2 = {
     return Math.sqrt(this.lengthSquared(a));
   },
   setLength: function(target, l) {
-    var length = this.length(target);
+    let length = this.length(target);
     if (length !== 0 && l !== length) {
       this.multiplyScalar(target, l / length);
     }

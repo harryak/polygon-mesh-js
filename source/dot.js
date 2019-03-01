@@ -38,27 +38,27 @@ PMJS.Dot.prototype = {
     return this;
   },
   updateSpeed: function() {
-    var deltaX =  PMJS.Utils.floorDecPlaces(
+    let deltaX =  PMJS.Utils.floorDecPlaces(
                     PMJS.Utils.randomRange(
                       PMJS.Config.dotSpeedXMin,
                       PMJS.Config.dotSpeedXMax
                     ),
                     4
                   ) * 0.1;
-    var speedX = PMJS.Vector2.getX(this.speed);
+    let speedX = PMJS.Vector2.getX(this.speed);
     if (deltaX > PMJS.Config.dotSpeedMinDelta || deltaX < 0 - PMJS.Config.dotSpeedMinDelta) {
       speedX += deltaX;
       if (speedX < PMJS.Config.dotSpeedXMin) speedX = PMJS.Config.dotSpeedXMin;
       if (speedX > PMJS.Config.dotSpeedXMax) speedX = PMJS.Config.dotSpeedXMax;
     }
-    var deltaY =  PMJS.Utils.floorDecPlaces(
+    let deltaY =  PMJS.Utils.floorDecPlaces(
                     PMJS.Utils.randomRange(
                       PMJS.Config.dotSpeedYMin,
                       PMJS.Config.dotSpeedYMax
                     ),
                     4
                   ) * 0.1;
-    var speedY = PMJS.Vector2.getY(this.speed);
+    let speedY = PMJS.Vector2.getY(this.speed);
     if (deltaY > PMJS.Config.dotSpeedMinDelta || deltaY < 0 - PMJS.Config.dotSpeedMinDelta) {
       speedY += deltaY;
       if (speedY < PMJS.Config.dotSpeedYMin) speedY = PMJS.Config.dotSpeedYMin;

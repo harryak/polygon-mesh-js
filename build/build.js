@@ -1,9 +1,9 @@
 // Dependencies
-var fs = require('fs');
-var uglify = require('uglify-js');
+let fs = require('fs');
+let uglify = require('uglify-js');
 
 // Settings
-var FILE_ENCODING = 'utf-8',
+let FILE_ENCODING = 'utf-8',
     PROJECT_NAME  = 'pmjs',
     LICENSE       = '../LICENSE',
     SOURCE_DIR    = '../source',
@@ -26,10 +26,10 @@ function getPath() {
 
 // Processes the specified files, creating a concatenated and a concatenated and minified output
 function process() {
-    var joined, license, unminified, minified;
+    let joined, license, unminified, minified;
 
     // Read the license
-    license = fs.readFileSync(LICENSE, FILE_ENCODING);
+    license = '/*' + fs.readFileSync(LICENSE, FILE_ENCODING) + '*/';
 
     // Join the contents of all sources files into a single string
     joined = SCRIPTS.map(function(file) {
@@ -40,7 +40,7 @@ function process() {
     unminified = license + '\n' + joined;
 
     // Minified
-    minified = license + uglify.minify(joined, {fromString: true}).code;
+    minified = license + uglify.minify(joined, {}).code;
 
     // Write out the concatenated file
     fs.writeFileSync(getPath(OUTPUT_DIR, PROJECT_NAME + '.js'), unminified, FILE_ENCODING);

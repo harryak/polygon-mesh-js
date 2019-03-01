@@ -25,7 +25,7 @@ PMJS.Plane.prototype = {
     }
   },
   initDots: function() {
-    var i;
+    let i;
 
     for (i = 0; i < this.dotCount; i++) {
       this.addDot();
@@ -40,7 +40,7 @@ PMJS.Plane.prototype = {
     return this;
   },
   addDot: function () {
-    var x, y, radius, speedX, speedY, dotColorR, dotColorG, dotColorB, dotColorA;
+    let x, y, radius, speedX, speedY, dotColorR, dotColorG, dotColorB, dotColorA;
 
     x = PMJS.Utils.randomRange(
           0,
@@ -74,13 +74,13 @@ PMJS.Plane.prototype = {
     dotColorA = PMJS.Utils.randomRange(PMJS.Config.dotColorMinA, PMJS.Config.dotColorMaxA);
     this.dotColor = 'rgba('+dotColorR+','+dotColorG+','+dotColorB+','+dotColorA+')';
 
-    var dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY);
+    let dot = new PMJS.Dot(x, y, radius, this.dotColor, speedX, speedY);
 
     this.dots.push(dot);
     return this;
   },
   updateLines: function() {
-    var i, j;
+    let i, j;
     this.lines = [];
 
     return this;

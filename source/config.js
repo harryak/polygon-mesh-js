@@ -28,4 +28,4 @@ PMJS.Config = {
   lineSize: 1,
   lineSizeMin: 0.5,
   lineSizeMax: 1.5
-}
+};

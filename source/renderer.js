@@ -34,13 +34,13 @@ PMJS.Renderer.prototype = {
     this.plane = plane;
   },
   render: function() {
-    if (this.width != window.innerWidth || this.height != window.innerHeight) {
+    if (this.width !== window.innerWidth || this.height !== window.innerHeight) {
       this.context.canvas.width  = window.innerWidth;
       this.context.canvas.height = window.innerHeight;
       this.setSize(this.element.width, this.element.height);
       this.setPlane(new PMJS.Plane(this.width, this.height, this.dotCount));
     }
-    var d, dot, l, line;
+    let d, dot, l, line;
 
     // Clear Context
     this.clear();
@@ -84,7 +84,7 @@ PMJS.Renderer.prototype = {
   },
   animate: function(timestep) {
     if (!timestep) timestep = 50;
-    var that = this;
+    let that = this;
     window.setInterval(function(){
       that.render();
     }, timestep);

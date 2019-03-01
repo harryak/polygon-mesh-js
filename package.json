@@ -1,0 +1,12 @@
+{
+  "name": "polygon-mesh-js",
+  "version": "1.0.0",
+  "dependencies": {},
+  "devDependencies": {
+    "uglify-js": "^3.4.9"
+  },
+
+  "scripts": {
+    "build": "cd build && node build.js"
+  }
+}
